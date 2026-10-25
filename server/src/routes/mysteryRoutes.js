@@ -1,0 +1,11 @@
+import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
+import { asyncHandler } from '../utils/errors.js';
+import { createMystery, getMystery, getResult, listMysteries, submitAccusation } from '../controllers/mysteryController.js';
+export const mysteryRoutes = Router();
+const accusationLimiter = rateLimit({ windowMs: 60 * 60 * 1000, limit: 10, standardHeaders: 'draft-7', legacyHeaders: false, handler: (req, res) => res.status(429).json({ success: false, error: { code: 'RATE_LIMITED', message: 'Too many accusation requests. Try again later.' } }) });
+mysteryRoutes.get('/', asyncHandler(listMysteries));
+mysteryRoutes.post('/', asyncHandler(createMystery));
+mysteryRoutes.get('/:id', asyncHandler(getMystery));
+mysteryRoutes.post('/:id/accusations', accusationLimiter, asyncHandler(submitAccusation));
+mysteryRoutes.get('/:id/result', asyncHandler(getResult));
